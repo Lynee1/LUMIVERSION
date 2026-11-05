@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-100 -104 200 208" role="img" aria-label="LUMIVERSION">
+  <defs>
+    <linearGradient id="lv-top" x1="-87" y1="-50" x2="0" y2="-100" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0A3A7A"/>
+      <stop offset="1" stop-color="#0D4C96"/>
+    </linearGradient>
+  </defs>
+  <g transform="scale(1.085,1)">
+  <!-- gold base (partly covered by the right panel) -->
+  <polygon fill="#E3B653" points="0,53.5 0,100 86.6,50 86.6,3.5"/>
+  <!-- left band: lower part of the open hexagon -->
+  <polygon fill="#072957" points="-86.6,-50 -86.6,50 0,100 0,53.5 -47.6,26 -47.6,-32.5"/>
+  <!-- left band: upper face, lighter -->
+  <polygon fill="url(#lv-top)" points="0,-100 -86.6,-50 -47.6,-32.5 0,-60"/>
+  <!-- right panel -->
+  <polygon fill="#072957" points="0,-100 86.6,-50 86.6,35 0,-15"/>
+  </g>
+</svg>
