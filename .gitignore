@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.DS_Store
+# private ingredient data: never commit the plain table
+data/private/
+*.private.csv
+.streamlit/secrets.toml

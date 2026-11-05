@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LUMIVERSION · Feed &amp; Growth Planner</title>
+<meta name="description" content="LUMIVERSION plans feed, growth and profit for largemouth bass, tracks the carbon and phosphorus footprint of each diet, and estimates fish weight from underwater stereo images.">
+<meta name="theme-color" content="#072957">
+<meta property="og:title" content="LUMIVERSION · Feed &amp; Growth Planner">
+<meta property="og:image" content="assets/img/logo-1024.png">
+<meta property="og:description" content="Feed, growth, profit and footprint planning for largemouth bass, with camera-based weight estimation.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="assets/img/logo.svg">
+<link rel="apple-touch-icon" href="assets/img/logo-1024.png">
+<link rel="preload" href="assets/fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="bar">
+  <canvas id="waves" aria-hidden="true"></canvas>
+  <div class="bar-in">
+    <div class="brand">
+      <div class="logo"><img src="assets/img/logo.svg" alt="" width="30" height="31"></div>
+      <div><h1 class="wordmark">LUMIVERSION</h1><p data-i18n="brand_sub"></p></div>
+    </div>
+    <div class="pills"><span class="pill" data-i18n="pill_tag"></span></div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="rail">
+    <section class="panel">
+      <h2><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span data-i18n="sec_scenario"></span></h2>
+      <div class="field">
+        <label data-i18n="presets_label"></label>
+        <div class="seg" id="presets">
+          <button type="button" data-p="5,180,0" aria-pressed="true"><b data-i18n="p_fry"></b><small data-i18n="p_fry_s"></small></button>
+          <button type="button" data-p="30,150,0" aria-pressed="false"><b data-i18n="p_juv"></b><small data-i18n="p_juv_s"></small></button>
+          <button type="button" data-p="120,90,0" aria-pressed="false"><b data-i18n="p_grow"></b><small data-i18n="p_grow_s"></small></button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-top"><label for="w0" data-i18n="w0_label"></label></div>
+        <div class="numin"><input id="w0" type="number" min="0.5" max="1000" step="0.5" value="5"><span data-i18n="unit_gfish"></span></div>
+      </div>
+      <div class="field">
+        <div class="field-top"><label for="days" data-i18n="days_label"></label><output class="val" id="days-o"></output></div>
+        <input id="days" type="range" min="10" max="365" step="5" value="180">
+        <div class="hint" id="harvest-hint"></div>
+      </div>
+      <div class="field">
+        <div class="field-top"><label for="toff" data-i18n="toff_label"></label><output class="val" id="toff-o"></output></div>
+        <input id="toff" type="range" min="-5" max="5" step="0.5" value="0">
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span data-i18n="sec_strategy"></span></h2>
+      <div class="strat" id="strat">
+        <label><input type="radio" name="mode" value="cost" id="m-cost"><span><b data-i18n="mode_cost"></b><small data-i18n="mode_cost_d"></small></span></label>
+        <label><input type="radio" name="mode" value="profit" id="m-profit"><span><b data-i18n="mode_profit"></b><small data-i18n="mode_profit_d"></small></span></label>
+        <label><input type="radio" name="mode" value="env" id="m-env" checked><span><b data-i18n="mode_env"></b><small data-i18n="mode_env_d"></small></span></label>
+        <label><input type="radio" name="mode" value="knee" id="m-knee"><span><b data-i18n="mode_knee"></b><small data-i18n="mode_knee_d"></small></span></label>
+      </div>
+      <button class="run" id="run" type="button" style="margin-top:14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg><span id="run-label" data-i18n="run"></span><span class="badge" id="run-badge" data-i18n="badge_dirty" hidden></span></button>
+      <div class="progress" aria-hidden="true"><i id="prog"></i></div>
+      <div class="hint" id="run-hint" style="margin-top:8px"></div>
+    </section>
+
+    <section class="panel">
+      <h2><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><span data-i18n="sec_data"></span></h2>
+      <div class="src" id="src"></div>
+      <div class="lock" id="lock-box">
+        <label for="lock-pass" data-i18n="lock_lbl"></label>
+        <div class="lock-row"><input id="lock-pass" type="password" autocomplete="current-password" data-i18n-attr="placeholder:lock_ph"><button class="btn sm" id="lock-go" type="button" data-i18n="lock_go"></button></div>
+        <label class="vchk"><input type="checkbox" id="lock-rem"> <span data-i18n="lock_rem"></span></label>
+        <div class="hint" id="lock-msg" aria-live="polite"></div>
+      </div>
+      <button class="btn sm" id="lock-sample" type="button" hidden data-i18n="lock_sample" style="margin-top:8px"></button>
+      <div class="field" style="margin-top:14px">
+        <div class="field-top"><label for="fx" data-i18n="fx_label"></label></div>
+        <div class="numin"><input id="fx" type="number" min="0.1" step="0.01" value="9.02"><span>CNY / £</span></div>
+        <div class="hint" data-i18n="fx_hint"></div>
+      </div>
+      <div class="field">
+        <div class="field-top"><label for="mkt" data-i18n="mkt_label"></label><output class="val" id="mkt-o">+0%</output></div>
+        <input id="mkt" type="range" min="-30" max="30" step="1" value="0">
+      </div>
+      <details class="fold">
+        <summary data-i18n="upload_sum"></summary>
+        <div class="file">
+          <label class="drop" id="drop" for="csv"><span data-i18n="drop_html"></span><br><span class="hint" data-i18n="drop_hint"></span></label>
+          <input id="csv" type="file" accept=".csv,text/csv" hidden>
+          <label class="vchk" for="csvcur" style="margin-top:8px"><span data-i18n="csv_cur"></span> <select id="csvcur" class="runsel vsel"><option value="GBP">£ GBP</option><option value="CNY">¥ CNY</option></select></label>
+        </div>
+      </details>
+    </section>
+  </aside>
+
+  <main id="main">
+    <div class="status" id="status"></div>
+    <div id="alerts"></div>
+    <div class="kpis loading-veil" id="kpis"></div>
+    <div class="strip" id="strip"></div>
+    <nav class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-tab="overview" aria-selected="true" data-i18n="tab_overview"></button>
+      <button role="tab" data-tab="formula" aria-selected="false" data-i18n="tab_formula"></button>
+      <button role="tab" data-tab="growth" aria-selected="false" data-i18n="tab_growth"></button>
+      <button role="tab" data-tab="econ" aria-selected="false" data-i18n="tab_econ"></button>
+      <button role="tab" data-tab="env" aria-selected="false" data-i18n="tab_env"></button>
+      <button role="tab" data-tab="vision" aria-selected="false" data-i18n="tab_vision"></button>
+      <button role="tab" data-tab="compare" aria-selected="false" data-i18n="tab_compare"></button>
+      <button role="tab" data-tab="ings" aria-selected="false" data-i18n="tab_ings"></button>
+    </nav>
+
+    <section data-panel="overview" class="stack">
+      <div class="grid21">
+        <div class="card"><div class="card-h"><div><h3 data-i18n="c_main"></h3><div class="sub" data-i18n="c_main_s"></div></div></div><div class="plot" id="p-main" style="height:420px"></div></div>
+        <div class="stack">
+          <div class="card"><h3 data-i18n="c_summary"></h3><div class="summary" id="summary"></div><div class="fine" data-i18n="fine_profit"></div></div>
+          <div class="card"><h3 data-i18n="c_stages"></h3><div id="stages"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section data-panel="formula" class="stack" hidden>
+      <div class="grid3" id="scards"></div>
+      <div class="grid32">
+        <div class="card"><h3 data-i18n="c_stack"></h3><div class="sub" data-i18n="c_stack_s"></div><div class="plot" id="p-stack"></div></div>
+        <div class="card"><div class="card-h"><h3 data-i18n="c_donut"></h3><div class="radio-row" id="donut-pick"></div></div><div class="plot" id="p-donut"></div></div>
+      </div>
+      <div class="card"><div class="card-h"><div><h3 data-i18n="c_recipe"></h3><div class="sub" data-i18n="c_recipe_s"></div></div><div style="display:flex;gap:8px;align-items:center"><span class="copyok" id="copy-ok" data-i18n="copied" hidden></span><button class="btn sm" id="copy-recipe" type="button" data-i18n="copy_recipe"></button></div></div><div class="tw" id="recipe"></div><div id="copy-fallback"></div></div>
+      <details class="card fold"><summary data-i18n="c_nutri"></summary><div class="sub" data-i18n="c_nutri_s"></div><div class="tw" id="nutri"></div></details>
+    </section>
+
+    <section data-panel="growth" class="stack" hidden>
+      <div class="card"><h3 data-i18n="c_w"></h3><div class="sub" data-i18n="c_w_s"></div><div class="plot" id="p-w"></div></div>
+      <div class="grid3">
+        <div class="card"><h3 data-i18n="c_sgr"></h3><div class="plot sm" id="p-sgr"></div></div>
+        <div class="card"><h3 data-i18n="c_int"></h3><div class="plot sm" id="p-int"></div></div>
+        <div class="card"><h3 data-i18n="c_temp"></h3><div class="plot sm" id="p-temp"></div></div>
+      </div>
+    </section>
+
+    <section data-panel="econ" class="stack" hidden>
+      <div class="grid2">
+        <div class="card"><h3 data-i18n="c_wf"></h3><div class="plot sm" id="p-wf"></div></div>
+        <div class="card"><h3 data-i18n="c_sc"></h3><div class="plot sm" id="p-sc"></div></div>
+      </div>
+      <div class="card">
+        <h3 data-i18n="c_wi"></h3><div class="sub" data-i18n="c_wi_s"></div>
+        <div class="whatif">
+          <div>
+            <div class="field" style="margin-top:10px">
+              <div class="field-top"><label for="fadj" data-i18n="wi_adj"></label><output class="val" id="fadj-o">0%</output></div>
+              <input id="fadj" type="range" min="-40" max="40" step="1" value="0">
+            </div>
+            <div class="mini"><span data-i18n="wi_price"></span><b class="num" id="wi-price"></b></div>
+            <div class="mini"><span data-i18n="wi_profit"></span><b class="big" id="wi-profit"></b></div>
+            <div class="mini"><span data-i18n="wi_be"></span><b class="num" id="wi-be"></b></div>
+          </div>
+          <div class="plot sm" id="p-wi"></div>
+        </div>
+      </div>
+      <div class="card"><h3 data-i18n="c_fp"></h3><div class="sub" data-i18n="c_fp_s"></div><div class="plot sm" id="p-fp"></div></div>
+    </section>
+
+    <section data-panel="env" class="stack" hidden>
+      <div class="grid32">
+        <div class="card"><h3 data-i18n="c_trade"></h3><div class="sub" id="env-trade-note"></div><div class="plot" id="p-env-trade"></div></div>
+        <div class="card"><h3 data-i18n="c_env_stage"></h3><div class="sub" data-i18n="c_env_stage_s"></div><div class="plot" id="p-env-stage"></div></div>
+      </div>
+      <div class="grid2">
+        <div class="card"><h3 data-i18n="c_env_ing"></h3><div class="sub" data-i18n="c_env_ing_s"></div><div class="plot" id="p-env-ing"></div></div>
+        <div class="stack">
+          <div class="card"><h3 data-i18n="c_env_cum"></h3><div class="plot sm" id="p-env-cum"></div></div>
+          <div class="card"><h3 data-i18n="c_env_runs"></h3><div class="sub" data-i18n="c_env_runs_s"></div><div class="plot sm" id="p-env-runs"></div></div>
+        </div>
+      </div>
+      <details class="card fold"><summary data-i18n="c_env"></summary><div class="sub" id="env-note"></div></details>
+    </section>
+
+    <section data-panel="vision" class="stack" hidden>
+      <div class="card">
+        <div class="card-h">
+          <div><h3 data-i18n="c_img"></h3><div class="sub" id="vsrc"></div></div>
+          <div class="vgroup">
+            <label class="btn sm" for="vfile" data-i18n="upload_img"></label><input id="vfile" type="file" accept="image/*" hidden>
+            <div class="radio-row" id="vtype"><button type="button" data-type="stereo" aria-pressed="true" data-i18n="it_stereo"></button><button type="button" data-type="mono" aria-pressed="false" data-i18n="it_mono"></button></div>
+          </div>
+        </div>
+        <div class="thumbs" id="vthumbs"></div>
+        <div class="vbar">
+          <div class="vgroup" id="vtools">
+            <button type="button" class="tool" data-mode="axis" aria-pressed="true"><i style="background:#2DBFCB"></i><span data-i18n="tool_axis"></span></button>
+            <button type="button" class="tool" data-mode="roi" aria-pressed="false"><i style="background:#fff;border:1px dashed var(--muted)"></i><span data-i18n="tool_roi"></span></button>
+            <button type="button" class="tool" data-mode="hgt" aria-pressed="false"><i style="background:#EE6E68"></i><span data-i18n="tool_hgt"></span></button>
+            <button type="button" class="tool" data-mode="ref" aria-pressed="false" id="vtool-ref" hidden><i style="background:#F4B740"></i><span data-i18n="tool_ref"></span></button>
+            <button type="button" class="btn sm" id="vauto" data-i18n="tool_auto"></button>
+            <button type="button" class="btn sm" id="vmatch" data-i18n="tool_match"></button>
+            <button type="button" class="btn sm" id="vclear" data-i18n="tool_clear"></button>
+          </div>
+          <div class="vgroup" id="vviewg"><div class="radio-row" id="vview"><button type="button" data-view="both" aria-pressed="true" data-i18n="v_both"></button><button type="button" data-view="left" aria-pressed="false" data-i18n="v_left"></button><button type="button" data-view="right" aria-pressed="false" data-i18n="v_right"></button></div></div>
+        </div>
+        <div class="vcanvas-wrap"><canvas id="vcanvas" data-i18n-attr="aria-label:c_img"></canvas></div>
+        <div class="vcands" id="vcands" hidden></div>
+        <div class="vrow">
+          <div class="vtip" id="vtip"></div>
+          <div class="vmeta" id="vmeta"></div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center"><label class="vchk"><input type="checkbox" id="v-mask" checked> <span data-i18n="show_mask"></span></label><span class="hint" id="vmsg" aria-live="polite"></span></div>
+          <div class="vcal" id="vcal-mono" hidden>
+            <label class="vchk" for="vscale"><span data-i18n="ref_len"></span> <span class="numin"><input id="vscale" type="number" min="0.1" step="0.1" value="10"><span>cm</span></span></label>
+          </div>
+          <details class="fold" id="vcal-stereo">
+            <summary data-i18n="cal_sum"></summary>
+            <div class="vcal">
+              <label class="vchk" for="vcam"><span data-i18n="cal_cam"></span> <select id="vcam" class="runsel vsel"><option value="zed_hd">ZED · HD720</option><option value="zed_fhd">ZED · FHD1080</option><option value="zed_2k">ZED · 2K</option><option value="zed_vga">ZED · VGA</option><option value="custom" data-i18n="cal_custom"></option></select></label>
+              <label class="vchk" for="vB"><span data-i18n="cal_B"></span> <span class="numin"><input id="vB" type="number" min="1" step="0.001" placeholder="—"><span>mm</span></span></label>
+              <label class="vchk" for="vf"><span data-i18n="cal_f"></span> <span class="numin"><input id="vf" type="number" min="1" step="0.001" placeholder="—"><span>px</span></span></label>
+              <label class="vchk" for="vcx">c<sub>x</sub> <span class="numin sm"><input id="vcx" type="number" step="0.001" placeholder="—"><span>px</span></span></label>
+              <label class="vchk" for="vcy">c<sub>y</sub> <span class="numin sm"><input id="vcy" type="number" step="0.001" placeholder="—"><span>px</span></span></label>
+              <label class="vchk"><input type="checkbox" id="vwater" checked> <span data-i18n="cal_water"></span></label>
+            </div>
+            <div class="hint" id="vcal-hint" data-i18n="cal_hint"></div>
+          </details>
+        </div>
+      </div>
+
+      <div class="grid32">
+        <div class="card"><h3 data-i18n="c_curve"></h3><div class="sub" data-i18n="c_curve_s"></div><div class="plot" id="p-vcurve"></div></div>
+        <div class="card" id="vest">
+          <h3 data-i18n="c_est"></h3>
+          <div class="vsrcm" id="vsrcm"></div>
+          <div class="vin">
+            <div class="field"><label for="vL" data-i18n="in_L"></label><div class="numin"><input id="vL" type="number" step="0.1" min="1" value="21"><span>cm</span></div></div>
+            <div class="field"><label for="vH" data-i18n="in_H"></label><div class="numin"><input id="vH" type="number" step="0.1" min="0.5" value="6.3"><span>cm</span></div></div>
+          </div>
+          <div class="vbig"><span class="num" id="vW">—</span><small>g</small></div>
+          <div class="hint" id="vPI"></div>
+          <div class="alert warn" id="vwarn" hidden style="margin-top:10px"></div>
+          <div class="vmini"><div><span data-i18n="k_factor"></span><b class="num" id="vK">—</b></div><div><span data-i18n="hl"></span><b class="num" id="vHL">—</b></div></div>
+          <div class="vsave"><button class="run" id="vsave" type="button"></button><button class="btn" id="vsaveas" type="button" hidden data-i18n="saveas_rec"></button></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><div><h3 data-i18n="c_recs"></h3><div class="sub" data-i18n="c_recs_s"></div></div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="hint" id="vrec-msg" aria-live="polite"></span><button class="btn sm" id="vexport" type="button" data-i18n="export_csv"></button><button class="btn sm" id="vclearrec" type="button"></button></div></div>
+        <div class="tw" id="vrecs" style="max-height:360px;overflow:auto"></div>
+        <details class="vpaste"><summary data-i18n="paste_batch_sum"></summary>
+          <textarea id="vbatch" class="fallback" placeholder="21.8, 6.6" data-i18n-attr="aria-label:paste_batch_sum" spellcheck="false"></textarea>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 8px"><button class="btn sm" id="vbatch-go" type="button" data-i18n="paste_batch_go"></button><button class="btn sm" id="vbatch-demo" type="button" data-i18n="paste_batch_demo"></button><span class="hint" id="vbatch-msg"></span></div>
+        </details>
+        <div class="vbatch">
+          <div><div class="strip vstats" id="vbstats" style="box-shadow:none;margin:0 0 10px"></div><button class="run" id="vuse" type="button"></button></div>
+          <div class="plot sm" id="p-vhist"></div>
+        </div>
+      </div>
+
+      <details class="card fold" id="vmodel-box">
+        <summary data-i18n="d_model"></summary>
+        <div class="sub" id="vmodel-o"></div>
+        <div class="field" style="max-width:420px"><label for="vmodel" data-i18n="model_lbl"></label><select class="runsel" id="vmodel"></select></div>
+        <div class="tw" id="vtable"></div>
+        <div class="grid2" style="margin-top:14px">
+          <div><h3 data-i18n="c_fit"></h3><div class="sub" data-i18n="c_fit_s"></div><div class="plot" id="p-vfit"></div></div>
+          <div>
+            <div class="card-h"><div><h3 data-i18n="c_data"></h3><div class="sub" id="vn"></div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" id="vrow" type="button" data-i18n="add_row"></button><button class="btn sm" id="vreset" type="button" data-i18n="reset_data"></button></div></div>
+            <div class="tw" id="vdata" style="max-height:330px;overflow:auto"></div>
+            <details class="vpaste"><summary data-i18n="paste_sum"></summary>
+              <textarea id="vpaste" class="fallback" placeholder="94.5	18.6	5.3	3" data-i18n-attr="aria-label:paste_sum"></textarea>
+              <div style="display:flex;gap:8px;align-items:center;margin:6px 0 8px"><button class="btn sm" id="vpaste-go" type="button" data-i18n="paste_go"></button><span class="hint" id="vpaste-msg"></span></div>
+            </details>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <section data-panel="compare" class="stack" hidden>
+      <div class="card"><div class="card-h"><div><h3 data-i18n="c_runs"></h3><div class="sub" data-i18n="c_runs_s"></div></div><button class="btn sm" id="clear-runs" type="button" data-i18n="clear_runs"></button></div><div class="tw" id="runs"></div></div>
+      <div class="grid32">
+        <div class="card"><h3 data-i18n="c_cmp"></h3><div class="plot" id="p-cmp"></div></div>
+        <div class="card"><div class="card-h"><h3 data-i18n="c_cmpb"></h3><div class="radio-row" id="cmp-pick"></div></div><div class="plot" id="p-cmpb"></div></div>
+      </div>
+    </section>
+
+    <section data-panel="ings" class="stack" hidden>
+      <div class="grid32">
+        <div class="card"><div class="card-h"><div><h3 data-i18n="c_ings"></h3><div class="sub" data-i18n="c_ings_s"></div></div><button class="btn sm" id="reset-prices" type="button" data-i18n="reset_prices"></button></div><div class="tw" id="ingtab"></div></div>
+        <div class="card"><h3 data-i18n="c_pc"></h3><div class="sub" data-i18n="c_pc_s"></div><div class="plot" id="p-pc"></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+<footer class="foot" data-i18n="footer"></footer>
+
+<script src="assets/vendor/solver.js"></script>
+<script src="assets/vendor/plotly.min.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/vcore.js"></script>
+<script src="assets/js/vision.js"></script>
+</body>
+</html>
